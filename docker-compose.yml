@@ -1,0 +1,30 @@
+version: "3"
+services:
+  rabbitmq:
+    build:
+      ./broker
+    ports:
+      - "8080:15672"
+      - "8888:5000"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "5672"]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+  producer:
+    build:
+      ./producer
+    tty: true
+    expose:
+      - 3000
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+  consumer:
+    build:
+      ./consumer
+    tty: true
+    depends_on:
+      - rabbitmq
+      - producer
+    restart: on-failure
